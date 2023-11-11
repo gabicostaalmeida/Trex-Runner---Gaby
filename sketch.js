@@ -3,11 +3,20 @@ var trex, trexRunning
 var edges
 var ground, groundAnimation
 var invisibleGround
-
+var clouds, cloudImg
+var cactos, cactosImg1,cactosImg2,cactosImg3,cactosImg4,cactosImg5,cactosImg6
+var score = 0
 //preload carrega as mídias do jogo
 function preload(){
   trexRunning = loadAnimation("./images/trex3.png","./images/trex4.png")
   groundAnimation = loadImage("./images/ground2.png")
+  cloudImg = loadImage ("./images/cloud.png")
+  cactosImg1 = loadImage ("./images/obstacle1.png") 
+  cactosImg2 = loadImage ("./images/obstacle2.png") 
+  cactosImg3 = loadImage ("./images/obstacle3.png")
+  cactosImg4 = loadImage ("./images/obstacle4.png")
+  cactosImg5 = loadImage ("./images/obstacle5.png") 
+  cactosImg6 = loadImage ("./images/obstacle6.png") 
 }
 
 
@@ -37,7 +46,9 @@ function setup(){
 
 //draw faz o movimento, a ação do jogo
 function draw(){
-  background("lightgray");
+  background("darkgray");
+
+  score = Math.round(frameCount /2) 
 
   //pulo do trex
   if((keyDown("space") || keyDown("up")) && trex.y >= 160){
@@ -46,17 +57,87 @@ function draw(){
   //gravidade
   trex.velocityY += 0.5
 
-  // console.log(trex.y)
+  //console.log(frameCount)
+
 
   //colisão do trex com o solo
   trex.collide(invisibleGround)
 
   if(ground.x < 0){
-    ground.x = ground.width/2
+    ground.x = ground.width/2 
   }
+
+  createClouds()
+  createCactos()
+  //gerando números aleatórios
+  // var numero = random(1,10)
+  // numero = Math.round(numero)
+  //versão simplificada
+  var numero = Math.round(random(1,10))
+  //round() arredonda para o maior
+  //1,5 => 2 
+  //1,2 => 2
+  //floor()
+  //1,5 => 1
+  //1,9 => 1
+  textSize(20)
+  fill ("black")
+  text("score: "+score,230,15)
+
+  //console.log(numero)
  
   //coordenadas do mouse na tela
   text("X: "+mouseX+" / Y: "+mouseY,mouseX,mouseY)
   drawSprites();
 
+}
+
+//função para gerar nuvens
+
+function createClouds() {
+  if(frameCount%60==0)  {
+    var clouds = createSprite (600,random(1,118),10,10)
+      clouds.velocityX = -5
+      clouds.addImage(cloudImg)
+      clouds.scale = random(0.2,1.2)
+      clouds.depth = trex.depth -1
+      clouds.lifetime = 140
+  }
+}
+ 
+//função para fazer cactos
+
+function createCactos() {
+  if(frameCount%100==0)  {
+    var cactos = createSprite (600,170,10,10)
+    cactos.velocityX = -5
+    var randyCacto = Math.round(random (1,6))
+      switch (randyCacto) {
+        case 1: 
+        cactos.addImage(cactosImg1)
+        cactos.scale =0.6
+           break;
+        case 2:
+           cactos.addImage(cactosImg2) 
+           cactos.scale =0.7
+           break;
+        case 3 : 
+          cactos.addImage(cactosImg3)
+          cactos.scale =0.6
+           break;
+        case 4:
+          cactos.addImage(cactosImg4)
+          cactos.scale =0.5
+           break;
+        case 5: 
+          cactos.addImage(cactosImg5)
+          cactos.scale =0.6
+           break;
+        case 6:
+          cactos.addImage(cactosImg6)
+          cactos.scale =0.5
+           break;         
+      }
+       cactos.lifetime = 140
+  }
 }
