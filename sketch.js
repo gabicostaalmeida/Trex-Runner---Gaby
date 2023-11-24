@@ -6,9 +6,25 @@ var invisibleGround
 var clouds, cloudImg
 var cactos, cactosImg1,cactosImg2,cactosImg3,cactosImg4,cactosImg5,cactosImg6
 var score = 0
+const PLAY = 0
+const END = 1
+var gameState = PLAY
+var cloundsgroup
+var cactosgroup
+var trexColided
+var gameOver
+var gameOverImg
+var restartImg
+var restart
+
+//var => variaveis com escopo global - idade
+//let => variaveis de escopo local - idade
+//const => constantes - data de nascimento
+
 //preload carrega as mídias do jogo
 function preload(){
   trexRunning = loadAnimation("./images/trex3.png","./images/trex4.png")
+  trexColided = loadAnimation("./images/trex_collided.png")
   groundAnimation = loadImage("./images/ground2.png")
   cloudImg = loadImage ("./images/cloud.png")
   cactosImg1 = loadImage ("./images/obstacle1.png") 
@@ -17,6 +33,8 @@ function preload(){
   cactosImg4 = loadImage ("./images/obstacle4.png")
   cactosImg5 = loadImage ("./images/obstacle5.png") 
   cactosImg6 = loadImage ("./images/obstacle6.png") 
+  gameOverImg = loadImage("./images/gameOver.png")
+restartImg = loadImage("./images/restart.png")
 }
 
 
@@ -27,9 +45,12 @@ function setup(){
   //sprite trex
   trex = createSprite(50,170,30,50)
   trex.addAnimation("running",trexRunning)  
+  trex.addAnimation("colided",trexColided)
   trex.scale = 0.5
 
-  
+ trex.debug = false
+//trex.setCollider ("circle",0,0,40)
+trex.setCollider("rectangle",-5,0,45,90,25)
   //sprite Solo
   ground = createSprite(300,185,600,10)
   ground.addImage(groundAnimation) 
@@ -42,18 +63,52 @@ function setup(){
   //criando bordas
   edges = createEdgeSprites()
 
+  cloundsgroup = new Group()
+  cactosgroup = new Group()
+
+  gameOver = createSprite(300,85)
+  gameOver.addImage(gameOverImg)
+  gameOver.visible = false
+  restart = createSprite(300,125)
+  restart.addImage(restartImg)
+  restart.scale = 0.7
+  restart.visible = false
 }
 
 //draw faz o movimento, a ação do jogo
 function draw(){
   background("darkgray");
 
-  score = Math.round(frameCount /2) 
-
-  //pulo do trex
-  if((keyDown("space") || keyDown("up")) && trex.y >= 160){
-    trex.velocityY = -10 
+  if(trex.isTouching (cactosgroup)){
+    gameState = END
   }
+
+  if(gameState == PLAY){
+    score = Math.round(frameCount /2) 
+ //pulo do trex
+    if((keyDown("space") || keyDown("up")) && trex.y >= 160){
+      trex.velocityY = -10 
+    }
+    if(ground.x < 0){
+      ground.x = ground.width/2 
+    }
+    createClouds()
+    createCactos()
+  } else if (gameState == END){
+    ground.velocityX = 0
+    cloundsgroup.setVelocityXEach(0)
+    cactosgroup.setVelocityXEach(0)
+    trex.changeAnimation("colided")
+    cloundsgroup.setLifetimeEach(-1)
+    cactosgroup.setLifetimeEach(-1)
+    gameOver.visible = true 
+    restart.visible =  true
+  }
+  
+  
+
+  
+ 
   //gravidade
   trex.velocityY += 0.5
 
@@ -62,13 +117,12 @@ function draw(){
 
   //colisão do trex com o solo
   trex.collide(invisibleGround)
+  textSize(20)
+  fill ("black")
+  text("score: "+score,230,15)
 
-  if(ground.x < 0){
-    ground.x = ground.width/2 
-  }
-
-  createClouds()
-  createCactos()
+ 
+  
   //gerando números aleatórios
   // var numero = random(1,10)
   // numero = Math.round(numero)
@@ -80,10 +134,7 @@ function draw(){
   //floor()
   //1,5 => 1
   //1,9 => 1
-  textSize(20)
-  fill ("black")
-  text("score: "+score,230,15)
-
+  
   //console.log(numero)
  
   //coordenadas do mouse na tela
@@ -102,6 +153,7 @@ function createClouds() {
       clouds.scale = random(0.2,1.2)
       clouds.depth = trex.depth -1
       clouds.lifetime = 140
+          cloundsgroup.add(clouds)
   }
 }
  
@@ -139,5 +191,7 @@ function createCactos() {
            break;         
       }
        cactos.lifetime = 140
+
+          cactosgroup.add(cactos)
   }
 }
