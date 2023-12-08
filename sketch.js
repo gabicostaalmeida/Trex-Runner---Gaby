@@ -47,10 +47,11 @@ function preload(){
 
 //setup faz a configuração
 function setup(){
-  createCanvas(600,200);
+  //                600         200
+  createCanvas(windowWidth,windowHeight);
 
   //sprite trex
-  trex = createSprite(50,170,30,50)
+  trex = createSprite(50,height-30,30,50)
   trex.addAnimation("running",trexRunning)  
   trex.addAnimation("colided",trexColided)
   trex.scale = 0.5
@@ -58,12 +59,12 @@ function setup(){
  trex.debug = false
   trex.setCollider("rectangle",-5,0,45,90,20)
   //sprite Solo
-  ground = createSprite(300,185,600,10)
+  ground = createSprite(width/2,height-15,width,10)
   ground.addImage(groundAnimation) 
  
 
   // criando solo invisivel
-  invisibleGround = createSprite(300,190,600,1)
+  invisibleGround = createSprite(width/2,height-10,width,1)
   invisibleGround.visible = false
 
   //criando bordas
@@ -72,10 +73,10 @@ function setup(){
   cloundsgroup = new Group()
   cactosgroup = new Group()
 
-  gameOver = createSprite(300,85)
+  gameOver = createSprite(width/2,height-115)
   gameOver.addImage(gameOverImg)
   gameOver.visible = false
-  restart = createSprite(300,125)
+  restart = createSprite(width/2, height-75)
   restart.addImage(restartImg)
   restart.scale = 0.6
   restart.visible = false
@@ -101,7 +102,7 @@ function draw(){
   if(gameState == PLAY){
     score += Math.round(getFrameRate()/60) 
      //pulo do trex
-    if((keyDown("space") || keyDown("up")) && trex.y >= 160){
+    if((keyDown("space") || keyDown("up")) && trex.y >= height-40){
       trex.velocityY = -10
       jump.play()
     }
@@ -140,8 +141,8 @@ function draw(){
   //criando textos
   textSize(20)
   fill ("black")
-  text("score: "+score,230,15)
-  text("highscore: "+highscore,345,15)
+  text("score: "+score,width/2-70,height-185)
+  text("highscore: "+highscore,width/2+45,height-185)
   
   
   //gerando números aleatórios
@@ -165,12 +166,12 @@ function draw(){
 
 function createClouds() {
   if(frameCount%45==0)  {
-    var clouds = createSprite (600,random(1,118),10,10)
+    var clouds = createSprite (width,random(height-175,height-82),10,10)
       clouds.velocityX = -(5+3*score/100)
       clouds.addImage(cloudImg)
       clouds.scale = random(0.2,1.2)
       clouds.depth = trex.depth -1
-      clouds.lifetime = 140
+      clouds.lifetime = width/(clouds.velocityX*-1)
           cloundsgroup.add(clouds)
   }
 }
@@ -179,7 +180,7 @@ function createClouds() {
 
 function createCactos() {
   if(frameCount%85==0)  {
-    var cactos = createSprite (600,170,10,10)
+    var cactos = createSprite (width,height-30,10,10)
     cactos.velocityX = -(5+3*score/100)
     var randyCacto = Math.round(random (1,6))
       switch (randyCacto) {
@@ -208,7 +209,7 @@ function createCactos() {
           cactos.scale =0.5
            break;         
       }
-       cactos.lifetime = 140
+       cactos.lifetime = width/(cactos.velocityX*-1)
 
           cactosgroup.add(cactos)
   }
