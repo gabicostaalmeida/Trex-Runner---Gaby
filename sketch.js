@@ -16,7 +16,11 @@ var gameOver
 var gameOverImg
 var restartImg
 var restart
-
+var jump
+var checkpoint
+var die
+var isDied = false
+var highscore = 0
 //var => variaveis com escopo global - idade
 //let => variaveis de escopo local - idade
 //const => constantes - data de nascimento
@@ -34,7 +38,10 @@ function preload(){
   cactosImg5 = loadImage ("./images/obstacle5.png") 
   cactosImg6 = loadImage ("./images/obstacle6.png") 
   gameOverImg = loadImage("./images/gameOver.png")
-restartImg = loadImage("./images/restart.png")
+  restartImg = loadImage("./images/restart.png")
+  jump = loadSound("./sounds/jump.mp3")
+  die = loadSound("./sounds/die.mp3")
+  checkpoint = loadSound("./sounds/checkPoint.mp3")
 }
 
 
@@ -49,12 +56,11 @@ function setup(){
   trex.scale = 0.5
 
  trex.debug = false
-//trex.setCollider ("circle",0,0,40)
-trex.setCollider("rectangle",-5,0,45,90,25)
+  trex.setCollider("rectangle",-5,0,45,90,20)
   //sprite Solo
   ground = createSprite(300,185,600,10)
   ground.addImage(groundAnimation) 
-  ground.velocityX = -2
+ 
 
   // criando solo invisivel
   invisibleGround = createSprite(300,190,600,1)
@@ -71,7 +77,7 @@ trex.setCollider("rectangle",-5,0,45,90,25)
   gameOver.visible = false
   restart = createSprite(300,125)
   restart.addImage(restartImg)
-  restart.scale = 0.7
+  restart.scale = 0.6
   restart.visible = false
 }
 
@@ -80,48 +86,63 @@ function draw(){
   background("darkgray");
 
   if(trex.isTouching (cactosgroup)){
-    gameState = END
+    //  trex.velocityY = -10
+    //  jump.play()
+   gameState = END
+      if(!isDied){
+        die.play()
+        isDied = true
+      }
+    
+
+
   }
 
   if(gameState == PLAY){
-    score = Math.round(frameCount /2) 
- //pulo do trex
+    score += Math.round(getFrameRate()/60) 
+     //pulo do trex
     if((keyDown("space") || keyDown("up")) && trex.y >= 160){
-      trex.velocityY = -10 
+      trex.velocityY = -10
+      jump.play()
+    }
+    if(score%100 == 0 && score != 0){
+      checkpoint.play()
+    }
+     //gravidade
+     trex.velocityY += 0.5
+    if ( keyDown("Down") ) {
+      trex.velocityY = 10
     }
     if(ground.x < 0){
       ground.x = ground.width/2 
     }
     createClouds()
     createCactos()
+
+    ground.velocityX = -(2+3*score/100)
+
   } else if (gameState == END){
-    ground.velocityX = 0
-    cloundsgroup.setVelocityXEach(0)
-    cactosgroup.setVelocityXEach(0)
-    trex.changeAnimation("colided")
-    cloundsgroup.setLifetimeEach(-1)
-    cactosgroup.setLifetimeEach(-1)
-    gameOver.visible = true 
-    restart.visible =  true
+        gameEnd()
+        if(score >= highscore){
+          highscore = score
+      
+        }
+        if(mousePressedOver(restart)){
+          restartGame()
+
+    }
+
+
   }
-  
-  
-
-  
- 
-  //gravidade
-  trex.velocityY += 0.5
-
   //console.log(frameCount)
-
-
   //colisão do trex com o solo
   trex.collide(invisibleGround)
+  //criando textos
   textSize(20)
   fill ("black")
   text("score: "+score,230,15)
-
- 
+  text("highscore: "+highscore,345,15)
+  
   
   //gerando números aleatórios
   // var numero = random(1,10)
@@ -134,21 +155,18 @@ function draw(){
   //floor()
   //1,5 => 1
   //1,9 => 1
-  
   //console.log(numero)
- 
   //coordenadas do mouse na tela
   text("X: "+mouseX+" / Y: "+mouseY,mouseX,mouseY)
   drawSprites();
-
 }
 
 //função para gerar nuvens
 
 function createClouds() {
-  if(frameCount%60==0)  {
+  if(frameCount%45==0)  {
     var clouds = createSprite (600,random(1,118),10,10)
-      clouds.velocityX = -5
+      clouds.velocityX = -(5+3*score/100)
       clouds.addImage(cloudImg)
       clouds.scale = random(0.2,1.2)
       clouds.depth = trex.depth -1
@@ -160,9 +178,9 @@ function createClouds() {
 //função para fazer cactos
 
 function createCactos() {
-  if(frameCount%100==0)  {
+  if(frameCount%85==0)  {
     var cactos = createSprite (600,170,10,10)
-    cactos.velocityX = -5
+    cactos.velocityX = -(5+3*score/100)
     var randyCacto = Math.round(random (1,6))
       switch (randyCacto) {
         case 1: 
@@ -194,4 +212,26 @@ function createCactos() {
 
           cactosgroup.add(cactos)
   }
+}
+
+function gameEnd(){
+  ground.velocityX = 0
+  trex.velocityY = 0
+  cloundsgroup.setVelocityXEach(0)
+  cactosgroup.setVelocityXEach(0)
+  trex.changeAnimation("colided")
+  cloundsgroup.setLifetimeEach(-1)
+  cactosgroup.setLifetimeEach(-1)
+  gameOver.visible = true 
+  restart.visible =  true
+}
+
+function restartGame(){
+  gameState = PLAY
+  cactosgroup.destroyEach()
+  cloundsgroup.destroyEach()
+  trex.changeAnimation("running")
+  gameOver.visible = false
+  restart.visible = false
+  score = 0
 }
