@@ -102,17 +102,18 @@ function draw(){
   if(gameState == PLAY){
     score += Math.round(getFrameRate()/60) 
      //pulo do trex
-    if((keyDown("space") || keyDown("up")) && trex.y >= height-40){
-      trex.velocityY = -10
+    if((keyDown("space") || keyDown("up") || touches.length > 0) && trex.y >= height-40){
+      trex.velocityY = -15
+      touches = []
       jump.play()
     }
     if(score%100 == 0 && score != 0){
       checkpoint.play()
     }
      //gravidade
-     trex.velocityY += 0.5
+     trex.velocityY += 1
     if ( keyDown("Down") ) {
-      trex.velocityY = 10
+      trex.velocityY = 15
     }
     if(ground.x < 0){
       ground.x = ground.width/2 
@@ -128,7 +129,8 @@ function draw(){
           highscore = score
       
         }
-        if(mousePressedOver(restart)){
+        if(mousePressedOver(restart) || touches.length > 0){
+          touches = []
           restartGame()
 
     }
@@ -179,7 +181,7 @@ function createClouds() {
 //função para fazer cactos
 
 function createCactos() {
-  if(frameCount%85==0)  {
+  if(frameCount%65==0)  {
     var cactos = createSprite (width,height-30,10,10)
     cactos.velocityX = -(5+3*score/100)
     var randyCacto = Math.round(random (1,6))
